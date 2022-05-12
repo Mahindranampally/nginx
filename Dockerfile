@@ -6,25 +6,22 @@
 
 # Pull base image.
 FROM ubuntu:16.04
+FROM centos
 
-# Install Nginx.
-RUN \
-  add-apt-repository -y ppa:nginx/stable && \
-  apt-get update && \
-  apt-get install -y nginx && \
-  rm -rf /var/lib/apt/lists/* && \
-  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
-  chown -R www-data:www-data /var/lib/nginx
+MAINTAINER aksarav@middlewareinventory.com
 
-# Define mountable directories.
-VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
+RUN mkdir /opt/tomcat/
 
-# Define working directory.
-WORKDIR /etc/nginx
+WORKDIR /opt/tomcat
+RUN curl -O https://www-eu.apache.org/dist/tomcat/tomcat-8/v8.5.40/bin/apache-tomcat-8.5.40.tar.gz
+RUN tar xvfz apache*.tar.gz
+RUN mv apache-tomcat-8.5.40/* /opt/tomcat/.
+RUN yum -y install java
+RUN java -version
 
-# Define default command.
-CMD ["nginx"]
+WORKDIR /opt/tomcat/webapps
+RUN curl -O -L https://github.com/AKSarav/SampleWebApp/raw/master/dist/SampleWebApp.war
 
-# Expose ports.
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+
+CMD ["/opt/tomcat/bin/catalina.sh", "run"]
